@@ -1,32 +1,22 @@
 """Run supervised learning tests before and after DR and DR+clustering"""
 
-from collections import defaultdict
-from pprint import pprint
+from datetime import datetime
 import sys
-from time import time
-import warnings
 
-from keras.wrappers.scikit_learn import KerasClassifier
-from matplotlib import cm
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from scipy.stats import describe, kurtosis
-import seaborn as sns; sns.set()
+from keras.wrappers.scikit_learn import KerasClassifier
+
 from sklearn.cluster import KMeans
 from sklearn.decomposition import FastICA, PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from sklearn.metrics import adjusted_mutual_info_score as ami
-from sklearn.metrics import silhouette_samples, silhouette_score
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.mixture import GaussianMixture
-from sklearn.pipeline import make_pipeline, Pipeline
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.random_projection import SparseRandomProjection, johnson_lindenstrauss_min_dim
+from sklearn.random_projection import SparseRandomProjection
 
 from mllib.loaders import load_adult
-from mllib.helpers import balanced_accuracy_scorer, build_keras_clf, save_search_result, save_cluster_result, load_cluster_result
-
+from mllib.helpers import balanced_accuracy_scorer, build_keras_clf, save_search_result
 
 # Neural network parameters
 try:
@@ -41,7 +31,7 @@ except ValueError:
 
 #Optimal NN parameters from A1
 HIDDEN_LAYER_SIZES = [(100,100)]
-EPOCHS = [1]
+EPOCHS = [100]
 
 dataset = 'adult'
 learner_type = 'ANN'
@@ -56,6 +46,7 @@ scaler = MinMaxScaler()
 X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
+print('Start time: %s' % datetime.now())
 # Phase 0: Baseline performance
 dr_type = 'BASE'
 print('Fitting %s' % dr_type)
@@ -184,4 +175,6 @@ for dr_cluster_type, dr, clusterer, dr_cc_list in zip(dr_cluster_types, dim_redu
             test_score = grid_search.score(X_test_dr_clust, y_test)
             save_search_result(grid_search, dataset, model, extras='%.3f' % test_score)
     print('Done fitting %s' % dr_cluster_type)
+
+print('End time: %s' % datetime.now())
 
