@@ -96,34 +96,34 @@ component_count_lists = [
 ]
 component_count_lists *= 2
 
-for dr_type, dr, dr_cc_list in zip(dr_types, dim_reducers, component_count_lists):
-    for component_count in dr_cc_list:
-        model = '%s_%i' % (dr_type, component_count)
-        print('Fitting %s' % model)
-        pipe = Pipeline([
-            ('reduce_dim', dr),
-            ('kerasclassifier', clf)
-        ])
-        param_grid = {
-            'reduce_dim__n_components': [component_count],
-            'kerasclassifier__n_input_features': [component_count],
-            'kerasclassifier__hidden_layer_sizes': HIDDEN_LAYER_SIZES,
-            'kerasclassifier__epochs': EPOCHS,
-            'kerasclassifier__n_gpus': [N_GPUS],
-        }
-        grid_search = GridSearchCV(
-            estimator=pipe,
-            param_grid=param_grid,
-            scoring=balanced_accuracy_scorer,
-            return_train_score=True,
-            cv=4,
-            verbose=1,
-            n_jobs=1,
-        )
-        grid_search.fit(X_train_scaled, y_train)
-        test_score = grid_search.score(X_test_scaled, y_test)
-        save_search_result(grid_search, dataset, model, extras='%.3f' % test_score)
-    print('Done fitting %s' % dr_type)
+# for dr_type, dr, dr_cc_list in zip(dr_types, dim_reducers, component_count_lists):
+#     for component_count in dr_cc_list:
+#         model = '%s_%i' % (dr_type, component_count)
+#         print('Fitting %s' % model)
+#         pipe = Pipeline([
+#             ('reduce_dim', dr),
+#             ('kerasclassifier', clf)
+#         ])
+#         param_grid = {
+#             'reduce_dim__n_components': [component_count],
+#             'kerasclassifier__n_input_features': [component_count],
+#             'kerasclassifier__hidden_layer_sizes': HIDDEN_LAYER_SIZES,
+#             'kerasclassifier__epochs': EPOCHS,
+#             'kerasclassifier__n_gpus': [N_GPUS],
+#         }
+#         grid_search = GridSearchCV(
+#             estimator=pipe,
+#             param_grid=param_grid,
+#             scoring=balanced_accuracy_scorer,
+#             return_train_score=True,
+#             cv=4,
+#             verbose=1,
+#             n_jobs=1,
+#         )
+#         grid_search.fit(X_train_scaled, y_train)
+#         test_score = grid_search.score(X_test_scaled, y_test)
+#         save_search_result(grid_search, dataset, model, extras='%.3f' % test_score)
+#     print('Done fitting %s' % dr_type)
 
 # Phase 2: Dimensionality reduction plus clustering
 dr_cluster_types = ['PCA+KM', 'ICA+KM', 'RP+KM', 'LDA+KM', 'PCA+EM', 'ICA+EM', 'RP+EM', 'LDA+EM']
