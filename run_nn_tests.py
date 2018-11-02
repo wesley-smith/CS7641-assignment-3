@@ -1,6 +1,7 @@
 """Run supervised learning tests before and after DR and DR+clustering"""
 
 from datetime import datetime
+from pprint import pprint
 import sys
 
 import numpy as np
@@ -75,7 +76,7 @@ print('Done fitting %s' % dr_type)
 # Parameter sets by algorithm
 PCA_COMPONENT_COUNTS = [1, 2, 10, 20, 30]
 ICA_COMPONENT_COUNTS = [1, 2, 10, 20, 30]
-RP_COMPONENT_COUNTS = [1, 2, 10, 20, 30, 80]
+RP_COMPONENT_COUNTS = [1, 2, 10, 20, 30]
 LDA_COMPONENT_COUNTS = [1]
 N_CLUSTER_COUNTS = [2, 10, 20, 30]
 
@@ -93,6 +94,7 @@ component_count_lists = [
     RP_COMPONENT_COUNTS,
     LDA_COMPONENT_COUNTS
 ]
+component_count_lists *= 2
 
 for dr_type, dr, dr_cc_list in zip(dr_types, dim_reducers, component_count_lists):
     for component_count in dr_cc_list:
@@ -129,6 +131,10 @@ dim_reducers = dim_reducers * 2
 clusterers = [KMeans(random_state=0, n_jobs=-1)] * 4
 clusterers.extend([GaussianMixture(random_state=0, n_init=1, init_params='kmeans')] * 4)
 for dr_cluster_type, dr, clusterer, dr_cc_list in zip(dr_cluster_types, dim_reducers, clusterers, component_count_lists):
+    pprint(dr_cluster_type)
+    pprint(dr)
+    pprint(clusterer)
+    pprint(dr_cc_list)
     for component_count in dr_cc_list:
         for cluster_count in N_CLUSTER_COUNTS:
             model = '%s_%i_%i' % (dr_cluster_type, component_count, cluster_count)
@@ -136,7 +142,10 @@ for dr_cluster_type, dr, clusterer, dr_cc_list in zip(dr_cluster_types, dim_redu
 
             # Apply DR
             dr.set_params(n_components=component_count)
-            X_train_dr = dr.fit_transform(X_train_scaled)
+            if isinstance(dr, LDA):
+                X_train_dr = dr.fit_transform(X_train_scaled, y_train)
+            else:
+                X_train_dr = dr.fit_transform(X_train_scaled)
             X_test_dr = dr.transform(X_test_scaled)
 
             # Apply clustering
